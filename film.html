@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>film · Abby Chang</title>
+  <link rel="stylesheet" href="gallery.css">
+  <style>
+    main { max-width: 620px; }
+    .slideshow { text-align: center; }
+    .blurb { margin-bottom: 1rem; }
+
+    /* ---- slideshow ---- */
+    .slideshow {
+      position: relative;
+      margin-top: 0;
+    }
+    .slideshow figure {
+      margin: 0;
+      text-align: center;
+    }
+    .slideshow figure:not(.active) { display: none; }
+    .slideshow img {
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      max-height: min(70vh, 560px);
+      margin: 0 auto;
+      background: transparent;
+      min-height: 0;
+    }
+    .slideshow img:not([src]) { background: #eeebe6; width: 100%; height: 300px; }  /* gray until photo added */
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+    .controls button {
+      background: none;
+      border: none;
+      font: inherit;
+      font-size: 1.3rem;
+      color: #888;
+      cursor: pointer;
+      padding: 0.25rem 0.75rem;
+    }
+    .controls button:hover { color: #8a6d4b; }
+    .counter {
+      font-size: 0.8rem;
+      color: #aaa;
+      min-width: 3.5rem;
+      text-align: center;
+    }
+
+
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="index.html">← back</a>
+
+    <h1>film</h1>
+    <p class="blurb">i love film for its ability to capture unpolished moments.</p>
+
+    <section class="slideshow">
+      <!--
+        HOW TO EDIT:
+        - put film photos in the images/film folder
+        - one <figure> per photo; change the file name + caption
+        - add more by copying a whole <figure>...</figure> block
+        - they show in the order listed here
+      -->
+      <figure>
+        <img src="images/film/1.jpg" alt="">
+        <figcaption><span class="meta">lake serene, washington — july 2025</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/2.jpg" alt="">
+        <figcaption><span class="meta">charis & i in seattle — july 2025</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/3.jpg" alt="">
+        <figcaption><span class="meta">char, elisha, & i in greenpoint — july 2025</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/4.jpg" alt="">
+        <figcaption><span class="meta">paso robles, california — january 2026</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/5.jpg" alt="">
+        <figcaption><span class="meta">serena & i took a pottery class in nyc!</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/6.jpg" alt="">
+        <figcaption><span class="meta">san juan teotihuacan — may 2026</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/7.jpg" alt="">
+        <figcaption><span class="meta">bainbridge @ bridal veil falls — july 2025</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/8.jpg" alt="">
+        <figcaption><span class="meta">charis, mina, leena, & i @ harvard — november 2025</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/9.jpg" alt="">
+        <figcaption><span class="meta"> legion of honor, SF - august 2025</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/10.jpg" alt="">
+        <figcaption><span class="meta">elisabeth & i @ UT — march 2026</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/11.jpg" alt="">
+        <figcaption><span class="meta">golden gate bridge, SF - february 2026</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/12.jpg" alt="">
+        <figcaption><span class="meta">seattle intern friends otw to vancouver</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/13.jpg" alt="">
+        <figcaption><span class="meta">central park — november 2025</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/14.jpg" alt="">
+        <figcaption><span class="meta">golden gate park — october 2025</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/15.jpg" alt="">
+        <figcaption><span class="meta">montara state beach — august 2025</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/16.jpg" alt="">
+        <figcaption><span class="meta">near alamo square, SF - august 2025</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/17.jpg" alt="">
+        <figcaption><span class="meta">shrine in enoshima, japan - march 2026</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/18.jpg" alt="">
+        <figcaption><span class="meta">isabella stewart gardner museum — april 2026</span></figcaption>
+      </figure>
+      <figure>
+        <img src="images/film/19.jpg" alt="">
+        <figcaption><span class="meta">CDMX!! — may 2026</span></figcaption>
+      </figure>
+      <div class="controls">
+        <button id="prev" aria-label="Previous photo">←</button>
+        <span class="counter" id="counter"></span>
+        <button id="next" aria-label="Next photo">→</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const slides = [...document.querySelectorAll(".slideshow figure")];
+    const counter = document.getElementById("counter");
+    let current = 0;
+
+    slides.forEach(fig => {
+      const img = fig.querySelector("img");
+      img.onerror = () => img.removeAttribute("src");
+    });
+
+    function show(i) {
+      slides[current].classList.remove("active");
+      current = (i + slides.length) % slides.length;   // wraps around at the ends
+      slides[current].classList.add("active");
+      counter.textContent = (current + 1) + " / " + slides.length;
+    }
+
+    document.getElementById("prev").onclick = () => show(current - 1);
+    document.getElementById("next").onclick = () => show(current + 1);
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowLeft") show(current - 1);
+      if (e.key === "ArrowRight") show(current + 1);
+    });
+
+    // swipe on phones
+    let startX = null;
+    const box = document.querySelector(".slideshow");
+    box.addEventListener("touchstart", e => startX = e.touches[0].clientX, { passive: true });
+    box.addEventListener("touchend", e => {
+      if (startX === null) return;
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 40) show(current + (dx < 0 ? 1 : -1));
+      startX = null;
+    });
+
+    show(0);
+  </script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abby Chang</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 4rem 1.25rem 0.75rem;
+      background: #fdfcfa;
+      color: #2b2b2b;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      min-height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      max-width: 640px;
+      margin: auto auto 0;        /* auto top margin keeps it vertically centered */
+      width: 100%;
+    }
+
+    /* ---- top left corner ---- */
+    .corner {
+      position: absolute;
+      top: 1.25rem;
+      left: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.2rem;
+      color: #555;
+    }
+    .corner a {
+      display: flex;
+      color: #888;
+    }
+    .corner a:hover { color: #0a66c2; }
+    .corner svg { width: 22px; height: 22px; }
+    .zh-name {
+      font-size: 1.5rem;
+      color: #2b2b2b;
+      padding: 0 3px;
+      /* soft sage highlight, a different shade from the beige on the intro */
+      background: linear-gradient(transparent 60%, #dfe8d6 60%);
+    }
+
+    /* ---- last updated, bottom right ---- */
+    .updated {
+      text-align: right;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      font-size: 0.7rem;
+      color: #bbb;
+      margin: 0;
+    }
+
+    /* ---- film photo cutouts ---- */
+    .photos {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .photos figure {
+      margin: 0;
+      flex: 1;
+      max-width: 180px;
+      aspect-ratio: 2 / 3;
+      background: #eeebe6;
+    }
+    .photos figure:nth-child(1) { transform: rotate(-2deg); }
+    .photos figure:nth-child(2) { transform: rotate(1deg) translateY(-6px); }
+    .photos figure:nth-child(3) { transform: rotate(-1deg); }
+
+    .photos img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(0.85) contrast(1.05);
+    }
+
+    /* ---- text ---- */
+    .content {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .intro { font-size: 1.05rem; }
+    .hello {
+      font-weight: 500;
+      /* soft highlighter-style underline, so it doesn't look like a link */
+      background: linear-gradient(transparent 62%, #efe3d3 62%);
+      padding: 0 2px;
+    }
+    p { margin: 0 0 1.25rem; }
+
+    details {
+      margin: 0 0 1.5rem;
+    }
+    summary {
+      cursor: pointer;
+      font-style: italic;
+      color: #555;
+    }
+    details ul {
+      margin: 0.5rem 0 0;
+      padding-left: 1.25rem;
+    }
+    details li { margin-bottom: 0.4rem; }
+    .company { font-weight: 500; }
+    .role {
+      font-size: 0.85em;
+      font-weight: 600;
+      color: #555;
+    }
+    .team {
+      display: block;
+      font-size: 0.85em;
+      color: #888;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.75rem;
+      margin: 2rem 0 2.5rem;
+      font-style: italic;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-thickness: 1px;
+    }
+    a:hover { color: #8a6d4b; }
+
+    .contact {
+      font-size: 0.85rem;
+      color: #999;
+    }
+
+    /* ---- flower drawings along the bottom of the page ---- */
+    .garden {
+      margin: 4rem -1.25rem 0;    /* gap above, and reach the page edges */
+      margin-top: auto;           /* pushes the flowers to the bottom of the screen */
+      padding: 4rem 0.5rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      pointer-events: none;       /* never blocks clicks on the page */
+      mix-blend-mode: multiply;   /* white paper disappears into the background */
+    }
+    .bunch {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+    }
+    .bunch img {
+      height: calc(var(--h) * var(--s, 1));
+      width: auto;
+      margin: 0 -10px;            /* let the stems overlap a little */
+      /* turn the paper white, then "multiply" makes white disappear */
+      filter: grayscale(1) brightness(1.2) contrast(2.6);
+      opacity: 0.95;
+    }
+
+    /* "i drew these!" note + hand-drawn arrow */
+    .drew {
+      position: absolute;
+      bottom: 100%;
+      left: 70%;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      margin-bottom: -6px;
+      font-size: 0.75rem;
+      font-style: italic;
+      color: #999;
+      white-space: nowrap;
+    }
+    .drew svg {
+      width: 34px;
+      height: 30px;
+      order: -1;
+      stroke: #aaa;
+    }
+
+    /* tablets: flowers sit below the content, a bit smaller */
+    .garden { --s: 0.75; }
+
+    /* laptops + desktops: pinned to the bottom corners, in the empty side space.
+       --s shrinks them on narrower screens so they never cover the text */
+    @media (min-width: 1100px) {
+      .garden {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+        padding: 0 0.75rem;
+        --s: 1;
+      }
+      main { margin: auto; }                    /* re-center now that flowers are pinned */
+      .bunch.right { margin-bottom: 1.6rem; }   /* room for "last updated" */
+      .updated {
+        position: fixed;
+        right: 1.5rem;
+        bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+      }
+    }
+    /* phones: fewer, smaller flowers so both bunches fit side by side */
+    @media (max-width: 600px) {
+      .garden { padding-top: 3rem; }
+      .garden { --s: 0.6; }
+      .bunch img { margin: 0 -7px; }
+    }
+
+    @media (max-width: 480px) {
+      .photos { gap: 0.75rem; }
+      body { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="corner">
+    <span lang="zh" class="zh-name">曦曦</span>
+    <a href="https://www.linkedin.com/in/abigail-chang-4222781b2/" target="_blank" rel="noopener" aria-label="LinkedIn">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+    </a>
+  </div>
+
+  <main>
+
+    <!-- Drop your film photos into an "images" folder with these names -->
+    <section class="photos">
+      <figure><img src="images/photo1.jpg" alt="" onerror="this.style.visibility='hidden'"></figure>
+      <figure><img src="images/photo2.jpg" alt="" onerror="this.style.visibility='hidden'"></figure>
+      <figure><img src="images/photo3.jpg" alt="" onerror="this.style.visibility='hidden'"></figure>
+    </section>
+
+    <div class="content">
+
+    <p class="intro">
+      <span class="hello">hello! my name is abigail chang.</span> most people call me <span class="hello">abby</span> :)
+      i'm a senior at rice university studying economics & data science, originally from
+      the <a href="bay-area.html">sf bay area</a>. i'm interested in the intersections of sustainability, tech,
+      and economics and i hope to continue exploring that space post-grad!
+    </p>
+
+    <details>
+      <summary>previously worked at…</summary>
+      <ul>
+        <li><span class="company">tesla</span> <span class="role">· software integrations eng & pm intern</span><span class="team">document generation platform</span></li>
+        <li><span class="company">mongodb</span> <span class="role">· pm & strategy intern</span><span class="team">customer support engineering</span></li>
+        <li><span class="company">amazon</span> <span class="role">· program management intern</span><span class="team">pickup & return logistics</span></li>
+        <li><span class="company">tesla</span> <span class="role">· supply chain analytics intern</span><span class="team">4680 battery r&d procurement</span></li>
+      </ul>
+    </details>
+
+    <p>see below to learn more about me:</p>
+
+    <nav>
+      <a href="nature.html">nature</a>
+      <a href="food-coffee.html">food/coffee</a>
+      <a href="film.html">film</a>
+      <a href="traveling.html">traveling</a>
+      <a href="art.html">art</a>
+      <a href="https://substack.com/@abbychang" target="_blank" rel="noopener">substack</a>
+    </nav>
+
+    <p class="contact">
+      feel free to reach out: <a href="mailto:abbychang777@gmail.com">abbychang777@gmail.com</a>
+    </p>
+
+    </div>
+
+  </main>
+
+  <!-- flower drawings: change --h to resize one, delete an <img> line to remove it -->
+  <div class="garden" aria-hidden="true">
+    <div class="bunch left">
+      <img src="images/flowers/sprig.jpg" style="--h: 195px" alt="">
+      <img src="images/flowers/daisies.jpg" style="--h: 150px" alt="">
+      <img src="images/flowers/dandelion.jpg" style="--h: 130px" alt="">
+      <span class="drew">
+        <svg viewBox="0 0 34 30" fill="none" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M32 4 C 22 3, 10 8, 5 24"/>
+          <path d="M2 18 L 5 25 L 11 20"/>
+        </svg>
+        i drew these!
+      </span>
+    </div>
+    <div class="bunch right">
+      <img src="images/flowers/stem.jpg" style="--h: 165px" alt="">
+      <img src="images/flowers/bloom.jpg" style="--h: 200px" alt="">
+      <img src="images/flowers/lavender.jpg" style="--h: 170px" alt="">
+    </div>
+  </div>
+
+  <p class="updated">last updated november 22, 2026</p>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>traveling · Abby Chang</title>
+  <link rel="stylesheet" href="gallery.css">
+  <style>
+    main { max-width: 860px; }
+    .home[hidden], .place[hidden] { display: none; }
+
+    /* ---- little stats ---- */
+    .stats {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 0.2rem 1rem;
+      margin: 0 0 2rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .stats dt { color: #999; font-style: italic; }
+    .stats dd { margin: 0; }
+    .counter-num {
+      font-weight: 600;
+      color: #2b2b2b;
+      background: linear-gradient(transparent 60%, #dfe8d6 60%);
+      padding: 0 2px;
+    }
+
+    /* ---- ink map ---- */
+    .map-wrap { position: relative; }
+    #map { width: 100%; height: auto; display: block; overflow: visible; }
+    #map .land {
+      fill: none;
+      stroke: #2b2b2b;
+      stroke-width: 0.7;
+      stroke-linejoin: round;
+    }
+    #map .land.visited { fill: #dfe8d6; }          /* same sage as the highlight on your chinese name */
+    #map .land:hover { fill: #eeebe6; }
+    #map .land.visited:hover { fill: #cbdbbd; }
+    #map .mark { fill: #a9c29a; stroke: #2b2b2b; stroke-width: 0.6; }   /* tiny places (e.g. monaco) */
+    #map .star { fill: #fdfcfa; stroke: #2b2b2b; stroke-width: 1.1; stroke-linejoin: round; }
+    #map .soon { fill: none; stroke: #8a6d4b; stroke-width: 1.4; stroke-dasharray: 2.2 1.8; }
+    #map .pick { cursor: pointer; }
+    #map .pick:hover .star { fill: #dfe8d6; stroke-width: 1.5; }
+
+    .tip {
+      position: absolute;
+      pointer-events: none;
+      background: #fdfcfa;
+      border: 1px solid #ddd;
+      font-size: 0.75rem;
+      font-style: italic;
+      padding: 0.1rem 0.45rem;
+      white-space: nowrap;
+      transform: translate(-50%, -140%);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.5rem;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: #999;
+      margin: 1rem 0 0;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .legend svg { width: 12px; height: 12px; overflow: visible; }
+
+    a { color: inherit; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+    a:hover { color: #8a6d4b; }
+
+    /* ---- one country's photos ---- */
+    .place h2 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      font-style: italic;
+      margin: 2rem 0 0.25rem;
+    }
+    .place .note { font-size: 0.85rem; color: #999; margin: 0 0 1.5rem; }
+    .grid[hidden], .note[hidden], .soon-text[hidden] { display: none; }
+    .soon-text { color: #555; margin: 0.75rem 0 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    .grid figure { margin: 0; cursor: pointer; background: #eeebe6; }
+    .grid img { aspect-ratio: 1; object-fit: cover; min-height: 0; transition: transform 0.2s ease; }
+    .grid img:not([src]) { visibility: hidden; }
+    .grid figure:hover img { transform: scale(1.03); }
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .stats { font-size: 0.85rem; }
+    }
+
+    .popup {
+      position: fixed; inset: 0;
+      background: rgba(253, 252, 250, 0.96);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 2rem 1.25rem; cursor: pointer; z-index: 10;
+    }
+    .popup[hidden] { display: none; }
+    .popup img { max-width: min(90vw, 600px); max-height: 75vh; width: auto; min-height: 0; object-fit: contain; }
+    .popup p { margin: 0.9rem 0 0; font-size: 0.9rem; color: #777; text-align: center; }
+  </style>
+</head>
+<body>
+  <main>
+
+    <!-- ===== first view: the map ===== -->
+    <section class="home" id="home">
+      <a class="back" href="index.html">← back</a>
+      <h1>traveling</h1>
+      <p class="blurb" style="margin-bottom: 1.5rem">
+        i feel incredibly privileged to have traveled to so many countries with my parents and friends.
+        getting to experience different cultures has been both exciting and important to me.
+      </p>
+
+      <dl class="stats">
+        <dt>currently in</dt>       <dd>bay area</dd>
+        <dt>country counter</dt>    <dd><span class="counter-num" id="count">22</span></dd>
+        <dt>upcoming travels</dt>   <dd>seattle, houston, taiwan, south korea, iceland (SO EXCITED)</dd>
+      </dl>
+
+      <div class="map-wrap">
+        <svg id="map" aria-label="map of places i've been"></svg>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+
+      <div class="legend">
+        <span><svg viewBox="-6 -6 12 12"><rect x="-5" y="-4" width="10" height="8" fill="#dfe8d6" stroke="#2b2b2b" stroke-width="0.8"/></svg>been here</span>
+        <span><svg viewBox="-7 -7 14 14"><path class="star-shape" d="M0 -6.5 L1.8 -2 L6.3 -1.8 L2.8 1.2 L4 6 L0 3.3 L-4 6.1 L-2.9 1.1 L-6.2 -2 L-1.7 -2.1 Z" fill="#fdfcfa" stroke="#2b2b2b" stroke-width="1.1" stroke-linejoin="round"/></svg>click for photos</span>
+        <span><svg viewBox="-6 -6 12 12"><circle r="4.5" fill="none" stroke="#8a6d4b" stroke-dasharray="2 2"/></svg>coming soon</span>
+      </div>
+
+    </section>
+
+    <!-- ===== photo pages for highlighted countries =====
+      HOW TO EDIT:
+      - photos go in images/traveling/<country>/ (e.g. images/traveling/japan/1.jpg)
+      - data-at="longitude, latitude" is where the star goes on the map
+        (google "<place> coordinates"; west and south are negative numbers)
+      - each <figure>: change src + data-caption
+      - copy a whole <section>...</section> (and change its id) to add another star
+    -->
+
+    <section class="place" id="cdmx" data-at="-99.13, 19.43" hidden>
+      <a class="back" href="#">← map</a>
+      <h2>cdmx</h2>
+      <p class="note">a little note about this trip</p>
+      <div class="grid">
+        <figure data-caption="place — month year"><img src="images/traveling/cdmx/1.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/cdmx/2.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/cdmx/3.jpg" alt=""></figure>
+      </div>
+    </section>
+
+    <section class="place" id="tokyo" data-at="139.69, 35.69" hidden>
+      <a class="back" href="#">← map</a>
+      <h2>tokyo</h2>
+      <p class="note">a little note about this trip</p>
+      <div class="grid">
+        <figure data-caption="place — month year"><img src="images/traveling/tokyo/1.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/tokyo/2.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/tokyo/3.jpg" alt=""></figure>
+      </div>
+    </section>
+
+    <section class="place" id="paris" data-at="2.35, 48.86" hidden>
+      <a class="back" href="#">← map</a>
+      <h2>paris</h2>
+      <p class="note">a little note about this trip</p>
+      <div class="grid">
+        <figure data-caption="place — month year"><img src="images/traveling/paris/1.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/paris/2.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/paris/3.jpg" alt=""></figure>
+      </div>
+    </section>
+
+    <section class="place" id="nice" data-at="7.27, 43.70" hidden>
+      <a class="back" href="#">← map</a>
+      <h2>nice</h2>
+      <p class="note">a little note about this trip</p>
+      <div class="grid">
+        <figure data-caption="place — month year"><img src="images/traveling/nice/1.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/nice/2.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/nice/3.jpg" alt=""></figure>
+      </div>
+    </section>
+
+    <section class="place" id="portugal" data-at="-8.3, 39.6" hidden>
+      <a class="back" href="#">← map</a>
+      <h2>portugal</h2>
+      <p class="note">a little note about this trip</p>
+      <div class="grid">
+        <figure data-caption="place — month year"><img src="images/traveling/portugal/1.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/portugal/2.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/portugal/3.jpg" alt=""></figure>
+      </div>
+    </section>
+
+    <section class="place" id="south-korea" data-at="127.8, 36.4" hidden>
+      <a class="back" href="#">← map</a>
+      <h2>south korea</h2>
+      <p class="note">a little note about this trip</p>
+      <div class="grid">
+        <figure data-caption="place — month year"><img src="images/traveling/south-korea/1.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/south-korea/2.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/south-korea/3.jpg" alt=""></figure>
+      </div>
+    </section>
+
+    <section class="place" id="spain" data-at="-3.7, 40.2" hidden>
+      <a class="back" href="#">← map</a>
+      <h2>spain</h2>
+      <p class="note">a little note about this trip</p>
+      <div class="grid">
+        <figure data-caption="place — month year"><img src="images/traveling/spain/1.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/spain/2.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/spain/3.jpg" alt=""></figure>
+      </div>
+    </section>
+
+    <section class="place" id="usa" data-at="-98.5, 39.5" hidden>
+      <a class="back" href="#">← map</a>
+      <h2>usa</h2>
+      <p class="note">a little note about this trip</p>
+      <div class="grid">
+        <figure data-caption="place — month year"><img src="images/traveling/usa/1.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/usa/2.jpg" alt=""></figure>
+        <figure data-caption="place — month year"><img src="images/traveling/usa/3.jpg" alt=""></figure>
+      </div>
+    </section>
+
+
+  </main>
+
+  <div class="popup" id="popup" hidden>
+    <img id="popup-img" alt="">
+    <p id="popup-caption"></p>
+  </div>
+
+  <script src="world-map.js"></script>
+  <script>
+    /* ========= EDIT THESE LISTS =========
+       names are lowercase, e.g. "united states of america", "united kingdom", "south korea".
+       tiny places without an outline also work: singapore, monaco, hong kong, malta, vatican city, bali… */
+    const VISITED = [
+      "canada", "united states of america", "mexico",
+      "portugal", "spain", "ireland", "united kingdom", "france", "belgium",
+      "netherlands", "germany", "italy", "denmark", "croatia", "austria",
+      "greece", "albania", "israel", "monaco",
+      "taiwan", "south korea", "japan",
+    ];
+    const UPCOMING = ["taiwan", "south korea", "iceland"];
+    /* ==================================== */
+
+    const NS = "http://www.w3.org/2000/svg";
+    const map = document.getElementById("map");
+    const tip = document.getElementById("tip");
+    const W = window.WORLD;
+    map.setAttribute("viewBox", W.viewBox.join(" "));
+
+    // hand-drawn wobble on every line
+    map.innerHTML = `<defs><filter id="ink" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" scale="2.2"/></filter></defs>`;
+
+    const el = (tag, attrs, parent) => {
+      const e = document.createElementNS(NS, tag);
+      for (const k in attrs) e.setAttribute(k, attrs[k]);
+      parent.appendChild(e);
+      return e;
+    };
+
+    // same map projection as world-map.js, so a longitude/latitude lands in the right spot
+    function project(lon, lat) {
+      const l = lon * Math.PI / 180, p = lat * Math.PI / 180, p2 = p * p, p4 = p2 * p2;
+      const x = l * (0.8707 - 0.131979 * p2 + p4 * (-0.013791 + p4 * (0.003971 * p2 - 0.001529 * p4)));
+      const y = p * (1.007226 + p2 * (0.015085 + p4 * (-0.044475 + 0.028874 * p2 - 0.005916 * p4)));
+      return [x * 165, -y * 165];
+    }
+
+    const land = el("g", { filter: "url(#ink)" }, map);
+    const marks = el("g", {}, map);
+    const where = {};
+
+    W.countries.forEach(c => {
+      const p = el("path", { d: c.d, class: "land" }, land);
+      if (VISITED.includes(c.n)) p.classList.add("visited");
+      if (UPCOMING.includes(c.n)) p.classList.add("upcoming");
+      p.addEventListener("mousemove", e => showTip(e, c.n));
+      p.addEventListener("mouseleave", () => tip.hidden = true);
+      where[c.n] = c.c;
+    });
+    Object.assign(where, W.tiny);
+
+    function showTip(e, name) {
+      const box = map.parentElement.getBoundingClientRect();
+      tip.textContent = name;
+      tip.style.left = (e.clientX - box.left) + "px";
+      tip.style.top = (e.clientY - box.top) + "px";
+      tip.hidden = false;
+    }
+
+    // tiny places (e.g. monaco) get a little green dot
+    VISITED.forEach(name => {
+      if (!where[name]) return console.warn("not on the map:", name);
+      if (W.tiny[name]) el("circle", { cx: where[name][0], cy: where[name][1], r: 2.2, class: "mark" }, marks);
+    });
+    document.getElementById("count").textContent = VISITED.length;
+    UPCOMING.forEach(name => {
+      const c = where[name];
+      if (c) el("circle", { cx: c[0], cy: c[1], r: 5, class: "soon" }, marks);
+    });
+
+    // ink star for every photo section
+    const STAR = "M0 -6.5 L1.8 -2 L6.3 -1.8 L2.8 1.2 L4 6 L0 3.3 L-4 6.1 L-2.9 1.1 L-6.2 -2 L-1.7 -2.1 Z";
+    const stars = el("g", {}, map);
+    document.querySelectorAll(".place").forEach(sec => {
+      const [lon, lat] = sec.dataset.at.split(",").map(Number);
+      const [x, y] = project(lon, lat);
+      const name = sec.querySelector("h2").textContent;
+      const a = el("a", { href: "#" + sec.id, class: "pick" }, stars);
+      el("path", { d: STAR, class: "star", transform: `translate(${x} ${y}) rotate(-8) scale(0.85)` }, a);
+      a.addEventListener("mousemove", e => showTip(e, name + " → photos"));
+      a.addEventListener("mouseleave", () => tip.hidden = true);
+    });
+
+    // show the map, or one country's photos, based on the #link
+    const home = document.getElementById("home");
+    const places = [...document.querySelectorAll(".place")];
+    function route() {
+      const match = places.find(s => s.id === location.hash.slice(1));
+      home.hidden = !!match;
+      places.forEach(s => s.hidden = s !== match);
+      tip.hidden = true;
+      window.scrollTo(0, 0);
+    }
+    window.addEventListener("hashchange", route);
+    route();
+
+    // click a photo -> caption
+    const popup = document.getElementById("popup");
+    const popupImg = document.getElementById("popup-img");
+    const popupCaption = document.getElementById("popup-caption");
+    // a place with no photos yet just says "coming soon :)"
+    function checkEmpty(sec) {
+      const hasPhoto = [...sec.querySelectorAll(".grid img")].some(i => i.getAttribute("src"));
+      sec.querySelector(".grid").hidden = !hasPhoto;
+      const note = sec.querySelector(".note");
+      if (note) note.hidden = !hasPhoto;
+      let soon = sec.querySelector(".soon-text");
+      if (!hasPhoto && !soon) {
+        soon = document.createElement("p");
+        soon.className = "soon-text";
+        soon.textContent = "coming soon :)";
+        sec.querySelector("h2").after(soon);
+      }
+      if (soon) soon.hidden = hasPhoto;
+    }
+
+    document.querySelectorAll(".grid figure").forEach(fig => {
+      const img = fig.querySelector("img");
+      const sec = fig.closest(".place");
+      img.onerror = () => { img.removeAttribute("src"); checkEmpty(sec); };
+      if (img.complete && !img.naturalWidth) img.removeAttribute("src");
+      fig.addEventListener("click", () => {
+        if (!img.getAttribute("src")) return;
+        popupImg.src = img.src;
+        popupCaption.textContent = fig.dataset.caption || "";
+        popup.hidden = false;
+      });
+    });
+    document.querySelectorAll(".place").forEach(checkEmpty);
+    popup.addEventListener("click", () => popup.hidden = true);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") popup.hidden = true; });
+  </script>
+</body>
+</html>

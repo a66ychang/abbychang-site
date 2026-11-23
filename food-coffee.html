@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>food/coffee · Abby Chang</title>
+  <link rel="stylesheet" href="gallery.css">
+  <style>
+    main { max-width: 640px; }
+
+    /* beli link: small badge + handle */
+    .beli {
+      color: inherit;
+      text-underline-offset: 4px;
+      text-decoration-thickness: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+    .beli-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-style: italic;
+      color: #fff;
+      background: #2b2b2b;
+      border-radius: 999px;
+      padding: 0 0.5rem;
+      line-height: 1.5;
+    }
+    .beli:hover { color: #8a6d4b; }
+    .beli:hover .beli-badge { background: #8a6d4b; }
+
+    /* ---- city picker ---- */
+    .cities {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2.25rem 1.5rem;
+      margin-top: 1rem;
+    }
+    .cities a {
+      width: 130px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+      color: inherit;
+      font-style: italic;
+    }
+    .cities a span {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-thickness: 1px;
+    }
+    .cities a:hover { color: #8a6d4b; }
+    .cities svg {
+      width: 58px;
+      height: 58px;
+      fill: none;
+      stroke: #2b2b2b;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s ease;
+    }
+    .cities a:hover svg { transform: rotate(-6deg); }
+
+    /* ---- one city's gallery ---- */
+    .city[hidden], .home[hidden] { display: none; }
+    .city h2 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      font-style: italic;
+      margin: 2rem 0 1.5rem;
+    }
+    .city h2:has(+ .note) { margin-bottom: 0.25rem; }
+    .note {
+      font-size: 0.85rem;
+      font-style: italic;
+      color: #999;
+      margin: 0 0 1.5rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    .grid figure {
+      margin: 0;
+      cursor: pointer;
+      background: #eeebe6;         /* gray square until the photo is added */
+    }
+    .grid img:not([src]) { visibility: hidden; }
+    .grid img {
+      aspect-ratio: 1;
+      object-fit: cover;
+      min-height: 0;
+      transition: transform 0.2s ease;
+    }
+    .grid figure:hover img { transform: scale(1.03); }
+    .hint {
+      font-size: 0.8rem;
+      color: #aaa;
+      margin-top: 1.25rem;
+    }
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .cities a { width: 110px; }
+    }
+
+    /* ---- pop-up when a photo is clicked ---- */
+    .popup {
+      position: fixed;
+      inset: 0;
+      background: rgba(253, 252, 250, 0.96);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .popup[hidden] { display: none; }
+    .popup img {
+      max-width: min(90vw, 560px);
+      max-height: 72vh;
+      width: auto;
+      min-height: 0;
+      object-fit: contain;
+    }
+    .popup .info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.9rem;
+    }
+    .popup .name {
+      margin: 0;
+      font-weight: 500;
+    }
+    /* beli-style score bubble: green = loved, yellow = fine, red = didn't like */
+    .score {
+      --c: #2f9e5b;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      border: 2px solid var(--c);
+      color: var(--c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .score.mid { --c: #e0a526; }
+    .score.low { --c: #d9534f; }
+    .score:empty { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+
+    <!-- ===== first view: list of cities ===== -->
+    <section class="home" id="home">
+      <a class="back" href="index.html">← back</a>
+      <h1>food/coffee</h1>
+      <p class="blurb">
+        i LOVE fun restaurants, laminated pastries, & quality espresso.
+        i'm also top 0.5% in the world on beli… follow along on my food adventures
+        <a class="beli" href="https://beliapp.co/app/a66ychang" target="_blank" rel="noopener"><span class="beli-badge">beli</span>@a66ychang</a>
+      </p>
+
+      <nav class="cities">
+        <a href="#nyc">
+          <!-- bagel -->
+          <svg viewBox="0 0 64 64"><path d="M9 33 C8 22, 22 16, 33 17 C46 18, 57 25, 56 35 C55 45, 43 50, 31 49 C18 48, 9 43, 10 32"/><path d="M25 33 C26 29, 38 29, 39 33 C39 37, 27 38, 25 34"/><path d="M11 38 C16 45, 27 47, 36 46"/><path d="M18 27 l2 -1 M44 24 l2 1 M48 37 l1 2 M21 41 l2 1 M33 22 l2 0 M40 43 l2 -1"/></svg>
+          <span>new york city</span>
+        </a>
+        <a href="#sf">
+          <!-- oyster on the half shell -->
+          <svg viewBox="0 0 64 64"><path d="M6 40 C8 34, 12 32, 14 28 C17 23, 21 24, 24 20 C28 16, 32 18, 36 15 C41 12, 45 15, 49 15 C54 15, 57 19, 58 24 C59 29, 56 31, 57 35 C58 40, 53 42, 51 45 C48 49, 43 48, 39 50 C34 52, 30 50, 25 51 C19 52, 14 49, 10 46 C7 44, 5 43, 7 39"/><path d="M12 45 C18 47, 24 47, 30 46 C36 46, 44 45, 50 41"/><path d="M18 38 C18 31, 26 24, 35 22 C44 20, 52 23, 51 30 C50 37, 42 41, 33 42 C25 43, 18 42, 18 37"/><path d="M22 35 C23 32, 26 32, 27 29 C29 27, 31 28, 33 26 C35 25, 37 27, 40 25 C42 24, 44 26, 47 26"/><path d="M5 41 l-3 1 M7 44 l-3 2"/></svg>
+          <span>san francisco</span>
+        </a>
+        <a href="#south-bay">
+          <!-- boba -->
+          <svg viewBox="0 0 64 64"><path d="M18 21 L22 54 C27 56, 37 56, 42 54 L46 21"/><path d="M15 21 C25 18, 39 18, 49 21"/><path d="M30 20 L36 5 M34 20 L40 6 M36 5 L40 6"/><path d="M20 29 C28 31, 36 27, 45 29"/><circle cx="27" cy="49" r="2"/><circle cx="33" cy="51" r="2"/><circle cx="38" cy="47" r="2"/><circle cx="30" cy="44" r="2"/><circle cx="36" cy="42" r="1.8"/></svg>
+          <span>south bay area</span>
+        </a>
+        <a href="#seattle">
+          <!-- coffee cup -->
+          <svg viewBox="0 0 64 64"><path d="M12 30 C22 33, 36 33, 46 30 C36 27, 22 27, 13 30"/><path d="M14 31 L17 50 C20 54, 38 54, 41 50 L44 31"/><path d="M44 35 C52 33, 54 44, 42 45"/><path d="M7 54 C20 58, 40 58, 53 54"/><path d="M24 24 C21 19, 28 16, 25 10 M33 23 C30 18, 37 15, 34 9"/></svg>
+          <span>seattle</span>
+        </a>
+        <a href="#houston">
+          <!-- bbq grill -->
+          <svg viewBox="0 0 64 64"><path d="M8 30 C20 31, 44 31, 56 29"/><path d="M10 31 C11 42, 20 48, 32 48 C44 48, 53 42, 54 31"/><path d="M21 46 L15 60 M43 46 L49 60 M32 48 L32 60"/><path d="M15 28 C15 24, 29 24, 29 27 C29 29, 16 29, 15 28"/><path d="M34 28 C35 24, 48 24, 49 27 C49 29, 35 29, 34 28"/><path d="M38 26 l2 -1 M43 26 l2 -1"/><path d="M24 20 C21 15, 28 12, 25 6 M38 20 C35 15, 42 12, 39 6"/></svg>
+          <span>houston</span>
+        </a>
+        <a href="#tokyo">
+          <!-- onigiri -->
+          <svg viewBox="0 0 64 64"><path d="M32 10 C38 10, 56 39, 54 48 C52 54, 12 54, 10 48 C8 39, 26 10, 33 10"/><path d="M24 52 L25 36 C30 35, 34 35, 39 36 L40 52"/><path d="M28 23 l2 1 M36 27 l1 2 M21 39 l2 -1 M44 41 l1 -2"/></svg>
+          <span>tokyo</span>
+        </a>
+        <a href="#paris">
+          <!-- croissant -->
+          <svg viewBox="0 0 64 64"><path d="M6 40 C10 24, 22 16, 32 16 C42 16, 54 24, 58 40 C54 44, 50 42, 48 40 C44 34, 38 32, 32 32 C26 32, 20 34, 16 40 C14 42, 10 44, 7 41"/><path d="M20 20 C22 26, 22 30, 21 34 M32 16 C33 22, 33 27, 32 32 M44 20 C42 26, 42 30, 43 34"/></svg>
+          <span>paris</span>
+        </a>
+        <a href="#coffee">
+          <!-- latte from above -->
+          <svg viewBox="0 0 64 64"><path d="M8 33 C8 20, 18 11, 30 11 C43 11, 52 21, 52 34 C51 46, 42 55, 30 55 C18 55, 8 46, 9 32"/><path d="M15 33 C15 25, 21 19, 29 19 C37 19, 43 25, 43 33 C43 41, 37 47, 29 47 C21 47, 15 41, 15 32"/><path d="M19 34 C18 27, 23 22, 29 22 C35 22, 40 27, 40 33 C40 39, 35 44, 29 44 C24 44, 20 41, 19 37"/><path d="M43 30 L50 29 C52 29, 52 36, 50 36 L43 35"/><path d="M29 40 C23 35, 21 31, 24 28 C26 26, 29 27, 29 30 C29 27, 32 26, 34 28 C37 31, 35 35, 29 40"/></svg>
+          <span>coffee</span>
+        </a>
+      </nav>
+    </section>
+
+    <!-- ===== one gallery per city =====
+      HOW TO EDIT:
+      - put photos in images/food-coffee/<city folder>/ (e.g. images/food-coffee/nyc/1.jpg)
+      - one <figure> per photo: change src, data-name (restaurant), data-score (beli score, e.g. 9.4)
+      - add more by copying a whole <figure ...>...</figure> line
+    -->
+
+    <section class="city" id="nyc" hidden>
+      <a class="back" href="#">← all cities</a>
+      <h2>new york city</h2>
+      <div class="grid">
+        <figure data-name="tomi jazz" data-score="9.8"><img src="images/food-coffee/nyc/1.jpg" alt=""></figure>
+        <figure data-name="l'industrie pizzeria" data-score="9.8"><img src="images/food-coffee/nyc/2.jpg" alt=""></figure>
+        <figure data-name="torrisi" data-score="9.9"><img src="images/food-coffee/nyc/3.jpg" alt=""></figure>
+        <figure data-name="shōsh" data-score="9.4"><img src="images/food-coffee/nyc/4.jpg" alt=""></figure>
+        <figure data-name="fish cheeks" data-score="9.9"><img src="images/food-coffee/nyc/5.jpg" alt=""></figure>
+        <figure data-name="radio bakery" data-score="9.7"><img src="images/food-coffee/nyc/6.jpg" alt=""></figure>
+        <figure data-name="umeko" data-score="9.5"><img src="images/food-coffee/nyc/7.jpg" alt=""></figure>
+        <figure data-name="soothr" data-score="9.4"><img src="images/food-coffee/nyc/8.jpg" alt=""></figure>
+        <figure data-name="reception bar" data-score="10.0"><img src="images/food-coffee/nyc/9.jpg" alt=""></figure>
+      </div>
+    </section>
+
+    <section class="city" id="sf" hidden>
+      <a class="back" href="#">← all cities</a>
+      <h2>san francisco</h2>
+      <div class="grid">
+        <figure data-name="yoechee" data-score="9.4"><img src="images/food-coffee/sf/1.jpg" alt=""></figure>
+        <figure data-name="tartine inner sunset" data-score="9.3"><img src="images/food-coffee/sf/2.jpg" alt=""></figure>
+        <figure data-name="breadbelly" data-score="9.4"><img src="images/food-coffee/sf/3.jpg" alt=""></figure>
+        <figure data-name="san tung" data-score="8.6"><img src="images/food-coffee/sf/4.jpg" alt=""></figure>
+        <figure data-name="bansang" data-score="9.4"><img src="images/food-coffee/sf/5.jpg" alt=""></figure>
+        <figure data-name="flour + water pizzeria" data-score="9.7"><img src="images/food-coffee/sf/6.jpg" alt=""></figure>
+        <figure data-name="arsicault" data-score="9.8"><img src="images/food-coffee/sf/7.jpg" alt=""></figure>
+        <figure data-name="taidama inner sunset" data-score="9.4"><img src="images/food-coffee/sf/8.jpg" alt=""></figure>
+        <figure data-name="thai spice restaurant" data-score="8.8"><img src="images/food-coffee/sf/9.jpg" alt=""></figure>
+      </div>
+    </section>
+
+    <section class="city" id="south-bay" hidden>
+      <a class="back" href="#">← all cities</a>
+      <h2>south bay area</h2>
+      <div class="grid">
+        <figure data-name="full house dumpling" data-score="10.0"><img src="images/food-coffee/south-bay/1.jpg" alt=""></figure>
+        <figure data-name="zareen's" data-score="10.0"><img src="images/food-coffee/south-bay/2.jpg" alt=""></figure>
+        <figure data-name="xiangbobo hunan cuisine" data-score="9.8"><img src="images/food-coffee/south-bay/3.jpg" alt=""></figure>
+        <figure data-name="yutori" data-score="9.4"><img src="images/food-coffee/south-bay/4.jpg" alt=""></figure>
+        <figure data-name="sumika" data-score="9.4"><img src="images/food-coffee/south-bay/5.jpg" alt=""></figure>
+        <figure data-name="taiwan cafe" data-score="10.0"><img src="images/food-coffee/south-bay/6.jpg" alt=""></figure>
+      </div>
+    </section>
+
+    <section class="city" id="seattle" hidden>
+      <a class="back" href="#">← all cities</a>
+      <h2>seattle</h2>
+      <div class="grid">
+        <figure data-name="taco chukis" data-score="10.0"><img src="images/food-coffee/seattle/1.jpg" alt=""></figure>
+        <figure data-name="cornelly" data-score="9.2"><img src="images/food-coffee/seattle/2.jpg" alt=""></figure>
+        <figure data-name="cheese room" data-score="9.2"><img src="images/food-coffee/seattle/3.jpg" alt=""></figure>
+        <figure data-name="kobuta & ookami katsu and sake house" data-score="9.5"><img src="images/food-coffee/seattle/4.jpg" alt=""></figure>
+        <figure data-name="onibaba by tsukushinbo" data-score="9.1"><img src="images/food-coffee/seattle/5.jpg" alt=""></figure>
+        <figure data-name="kin len thai night bites" data-score="9.0"><img src="images/food-coffee/seattle/6.jpg" alt=""></figure>
+
+      </div>
+    </section>
+
+    <section class="city" id="houston" hidden>
+      <a class="back" href="#">← all cities</a>
+      <h2>houston</h2>
+      <div class="grid">
+        <figure data-name="nancy's hustle" data-score="9.9"><img src="images/food-coffee/houston/1.jpg" alt=""></figure>
+        <figure data-name="san dong noodle house" data-score="9.8"><img src="images/food-coffee/houston/2.jpg" alt=""></figure>
+        <figure data-name="tiny champions" data-score="9.6"><img src="images/food-coffee/houston/3.jpg" alt=""></figure>
+        <figure data-name="handies duozo" data-score="9.5"><img src="images/food-coffee/houston/4.jpg" alt=""></figure>  
+        <figure data-name="lee's" data-score="9.5"><img src="images/food-coffee/houston/5.jpg" alt=""></figure>
+        <figure data-name="postino" data-score="8.8"><img src="images/food-coffee/houston/6.jpg" alt=""></figure>                      
+      </div>
+    </section>
+
+    <section class="city" id="tokyo" hidden>
+      <a class="back" href="#">← all cities</a>
+      <h2>tokyo</h2>
+      <div class="grid">
+        <figure data-name="okinawan parlour" data-score="10.0"><img src="images/food-coffee/tokyo/1.jpg" alt=""></figure>
+        <figure data-name="tonkatsu maisen" data-score="9.6"><img src="images/food-coffee/tokyo/2.jpg" alt=""></figure>
+        <figure data-name="komeraku" data-score="9.7"><img src="images/food-coffee/tokyo/3.jpg" alt=""></figure>
+        <figure data-name="daiju" data-score="8.9"><img src="images/food-coffee/tokyo/4.jpg" alt=""></figure>
+        <figure data-name="asakusa strawberry daifuku" data-score="7.8"><img src="images/food-coffee/tokyo/5.jpg" alt=""></figure>
+        <figure data-name="uraonikai" data-score="9.6"><img src="images/food-coffee/tokyo/6.jpg" alt=""></figure>                
+      </div>
+    </section>
+
+    <section class="city" id="paris" hidden>
+      <a class="back" href="#">← all cities</a>
+      <h2>paris</h2>
+      <div class="grid">
+        <figure data-name="folderol" data-score="9.9"><img src="images/food-coffee/paris/1.jpg" alt=""></figure>
+        <figure data-name="le 17.45 paris daguerre planches à composer" data-score="9.8"><img src="images/food-coffee/paris/2.jpg" alt=""></figure>
+        <figure data-name="pristine" data-score="9.8"><img src="images/food-coffee/paris/3.jpg" alt=""></figure>
+        <figure data-name="mesures" data-score="9.7"><img src="images/food-coffee/paris/4.jpg" alt=""></figure>
+        <figure data-name="mamiche" data-score="9.2"><img src="images/food-coffee/paris/5.jpg" alt=""></figure>
+        <figure data-name="peixes" data-score="9.0"><img src="images/food-coffee/paris/6.jpg" alt=""></figure>                        
+      </div>
+    </section>
+
+    <section class="city" id="coffee" hidden>
+      <a class="back" href="#">← all cities</a>
+      <h2>coffee</h2>
+      <p class="note">usual coffee order: flat white</p>
+      <div class="grid">
+        <figure data-name="fasan, nyc" data-score="10.0"><img src="images/food-coffee/coffee/1.jpg" alt=""></figure>
+        <figure data-name="sote coffee roaster, nyc" data-score="9.8"><img src="images/food-coffee/coffee/2.jpg" alt=""></figure>
+        <figure data-name="blue bottle aoyama, tokyo" data-score="9.7"><img src="images/food-coffee/coffee/3.jpg" alt=""></figure>
+        <figure data-name="gasoline alley coffee, nyc" data-score="9.7"><img src="images/food-coffee/coffee/4.jpg" alt=""></figure>   
+        <figure data-name="double black, san francisco" data-score="9.6"><img src="images/food-coffee/coffee/5.jpg" alt=""></figure>
+        <figure data-name="the coffee movement, san francisco" data-score="9.7"><img src="images/food-coffee/coffee/6.jpg" alt=""></figure>       
+      </div>
+    </section>
+
+  </main>
+
+  <div class="popup" id="popup" hidden>
+    <img id="popup-img" alt="">
+    <div class="info">
+      <p class="name" id="popup-name"></p>
+      <span class="score" id="popup-score"></span>
+    </div>
+  </div>
+
+  <script>
+    // show the city list, or one city's gallery, based on the #link
+    const home = document.getElementById("home");
+    const cities = [...document.querySelectorAll(".city")];
+    function route() {
+      const id = location.hash.slice(1);
+      const match = cities.find(c => c.id === id);
+      home.hidden = !!match;
+      cities.forEach(c => c.hidden = c !== match);
+      window.scrollTo(0, 0);
+    }
+    window.addEventListener("hashchange", route);
+    route();
+
+    // click a photo -> restaurant name + beli rank
+    const popup = document.getElementById("popup");
+    const popupImg = document.getElementById("popup-img");
+    const popupName = document.getElementById("popup-name");
+    const popupScore = document.getElementById("popup-score");
+
+    document.querySelectorAll(".grid figure").forEach(fig => {
+      const img = fig.querySelector("img");
+      img.onerror = () => img.removeAttribute("src");   // gray block until photo is added
+      if (img.complete && !img.naturalWidth) img.removeAttribute("src");
+      fig.addEventListener("click", () => {
+        if (!img.getAttribute("src")) return;
+        popupImg.src = img.src;
+        popupName.textContent = fig.dataset.name || "";
+        const score = parseFloat(fig.dataset.score);
+        popupScore.textContent = isNaN(score) ? "" : score.toFixed(1);
+        popupScore.className = "score" + (score < 3.4 ? " low" : score < 6.7 ? " mid" : "");
+        popup.hidden = false;
+      });
+    });
+
+    popup.addEventListener("click", () => popup.hidden = true);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") popup.hidden = true; });
+  </script>
+</body>
+</html>

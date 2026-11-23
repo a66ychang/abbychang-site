@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>nature · Abby Chang</title>
+  <link rel="stylesheet" href="gallery.css">
+  <style>
+    main { max-width: 860px; }
+
+    /* ---- collage: sentence in the middle, photos around it ---- */
+    .collage {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-areas:
+        "p1 p2 p3"
+        "p4 tx p5"
+        "p6 p7 p8";
+      gap: 2rem;
+      align-items: center;
+      margin-top: 2rem;
+    }
+
+    .center-text {
+      grid-area: tx;
+      text-align: center;
+      padding: 0 0.5rem;
+    }
+    .center-text h1 { margin: 0 0 0.5rem; }
+    .center-text p { margin: 0; color: #555; }
+
+    .collage figure {
+      margin: 0;
+      cursor: pointer;
+      transition: transform 0.25s ease;
+    }
+    .collage img {
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      object-fit: cover;
+      min-height: 0;
+    }
+
+    /* each photo gets its own spot + slight tilt, so it feels scattered */
+    .collage figure:nth-of-type(1) { grid-area: p1; transform: rotate(-4deg) translateY(10px); }
+    .collage figure:nth-of-type(2) { grid-area: p2; transform: rotate(2deg) scale(0.85); }
+    .collage figure:nth-of-type(3) { grid-area: p3; transform: rotate(3deg) translateY(20px); }
+    .collage figure:nth-of-type(4) { grid-area: p4; transform: rotate(3deg) scale(0.9); }
+    .collage figure:nth-of-type(5) { grid-area: p5; transform: rotate(-3deg) scale(0.9); }
+    .collage figure:nth-of-type(6) { grid-area: p6; transform: rotate(2deg) translateY(-15px); }
+    .collage figure:nth-of-type(7) { grid-area: p7; transform: rotate(-2deg) scale(0.85); }
+    .collage figure:nth-of-type(8) { grid-area: p8; transform: rotate(-4deg) translateY(-10px); }
+    .collage figure:hover { transform: rotate(0) scale(1.03); z-index: 1; }
+
+    /* phones: sentence on top, photos in two columns below */
+    @media (max-width: 640px) {
+      .collage {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas: none;
+        gap: 1.25rem;
+      }
+      .center-text { grid-column: 1 / -1; grid-area: auto; grid-row: 1; margin-bottom: 1rem; }
+      .collage figure:nth-of-type(n) { grid-area: auto; }
+    }
+
+    /* ---- pop-up when a photo is clicked ---- */
+    .popup {
+      position: fixed;
+      inset: 0;
+      background: rgba(253, 252, 250, 0.96);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .popup[hidden] { display: none; }
+    .popup img {
+      max-width: min(90vw, 600px);
+      max-height: 75vh;
+      width: auto;
+      min-height: 0;
+      object-fit: contain;
+    }
+    .popup p {
+      margin: 0.9rem 0 0;
+      font-size: 0.9rem;
+      color: #777;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="index.html">← back</a>
+
+    <section class="collage">
+
+      <div class="center-text">
+        <h1>nature</h1>
+        <p>God's gift to us. how blessed we are to live on this planet!</p>
+      </div>
+
+      <!--
+        HOW TO EDIT:
+        - put photos in the images/nature folder
+        - change src="..." to the photo's exact file name
+        - change data-caption="..." to the caption shown when it's clicked
+        - delete a whole <figure>...</figure> line to remove a slot
+      -->
+      <figure data-caption="saint-jean-cap-ferrat, france — april 2025"><img src="images/nature/1.jpg" alt=""></figure>
+      <figure data-caption="bridal veil falls, washington — july 2025"><img src="images/nature/2.jpg" alt=""></figure>
+      <figure data-caption="devil's slide bunker, california — august 2025"><img src="images/nature/3.jpg" alt=""></figure>
+      <figure data-caption="boston commons, massachusetts — november 2025"><img src="images/nature/4.jpg" alt=""></figure>
+      <figure data-caption="lands end lookout, california — december 2025"><img src="images/nature/5.jpg" alt=""></figure>
+      <figure data-caption="mt. tamalpais, california — may 2026"><img src="images/nature/6.jpg" alt=""></figure>
+      <figure data-caption="stanley park, vancouver — july 2025"><img src="images/nature/7.jpg" alt=""></figure>
+      <figure data-caption="meydenbauer bay park, washington — may 2025"><img src="images/nature/8.jpg" alt=""></figure>
+
+    </section>
+  </main>
+
+  <div class="popup" id="popup" hidden>
+    <img id="popup-img" alt="">
+    <p id="popup-caption"></p>
+  </div>
+
+  <script>
+    const popup = document.getElementById("popup");
+    const popupImg = document.getElementById("popup-img");
+    const popupCaption = document.getElementById("popup-caption");
+
+    document.querySelectorAll(".collage figure").forEach(fig => {
+      const img = fig.querySelector("img");
+      img.onerror = () => img.removeAttribute("src");   // gray block until photo is added
+      fig.addEventListener("click", () => {
+        if (!img.getAttribute("src")) return;
+        popupImg.src = img.src;
+        popupCaption.textContent = fig.dataset.caption;
+        popup.hidden = false;
+      });
+    });
+
+    popup.addEventListener("click", () => popup.hidden = true);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") popup.hidden = true; });
+  </script>
+</body>
+</html>
