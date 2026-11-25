@@ -108,6 +108,16 @@
       font-style: italic;
       color: #555;
     }
+    summary b {
+      font-style: normal;
+      font-weight: 500;
+      color: #2b2b2b;
+    }
+    /* small hint that it opens */
+    .more { font-size: 0.75rem; color: #aaa; font-style: normal; }
+    .more::after { content: "· see roles"; }
+    details[open] .more::after { content: "· hide"; }
+    summary:hover .more { color: #8a6d4b; }
     details ul {
       margin: 0.5rem 0 0;
       padding-left: 1.25rem;
@@ -255,7 +265,7 @@
     </p>
 
     <details>
-      <summary>previously worked at…</summary>
+      <summary>previously worked at <b>tesla</b>, <b>mongodb</b>, & <b>amazon</b> <span class="more"></span></summary>
       <ul>
         <li><span class="company">tesla</span> <span class="role">· software integrations eng & pm intern</span><span class="team">document generation platform</span></li>
         <li><span class="company">mongodb</span> <span class="role">· pm & strategy intern</span><span class="team">customer support engineering</span></li>
